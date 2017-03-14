@@ -3,7 +3,10 @@ package br.com.top10.deepbluesidemenu;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.RelativeLayout;
 
@@ -43,32 +46,73 @@ public class DeepBlueLayout extends RelativeLayout {
         contentView.layout(0, 0, r - l, b - t);
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
     public void switchMode() {
         View contentView = getChildAt(CONTENT_INDEX);
-        Animation contentAnimation = getContentAnimation();
-        contentView.setAnimation(contentAnimation);
-        contentAnimation.start();
+        AnimationSet contentAnimation = getContentAnimation();
+        contentView.startAnimation(contentAnimation);
     }
 
-    private Animation getContentAnimation() {
-        Animation animation = new Animation() {
+    private AnimationSet getContentAnimation() {
+        Animation rotationAnimation = new Animation() {
             View contentView = getChildAt(CONTENT_INDEX);
-            float xInitial = 0;
-            float xDelta = getChildAt(MENU_INDEX).getWidth();
+            float rotationYInitial = contentView.getRotationY();
+            float rotationYFinal = getRotationYFinal();
 
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 super.applyTransformation(interpolatedTime, t);
-                float xNew = xInitial + (xDelta * interpolatedTime);
+                float rotationYNew = rotationYInitial + ((rotationYFinal - rotationYInitial) * interpolatedTime);
+                contentView.setRotationY(rotationYNew);
+            }
+        };
+        rotationAnimation.setDuration(500);
+
+        Animation translateAnimation = new Animation() {
+            View contentView = getChildAt(CONTENT_INDEX);
+            float xInitial = contentView.getX();
+            float xFinal = getXDelta();
+
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                super.applyTransformation(interpolatedTime, t);
+                float xNew = xInitial + ((xFinal - xInitial) * interpolatedTime);
                 contentView.setX(xNew);
             }
         };
-        animation.setDuration(1000);
-        return animation;
+        translateAnimation.setDuration(500);
+
+        AnimationSet animationSet = new AnimationSet(true);
+        animationSet.setInterpolator(new DecelerateInterpolator());
+        animationSet.addAnimation(translateAnimation);
+        animationSet.addAnimation(rotationAnimation);
+
+        return animationSet;
+    }
+
+    public Mode getMode() {
+        View contentView = getChildAt(CONTENT_INDEX);
+        float contentViewRotationY = contentView.getRotationY();
+        if(contentViewRotationY == 0) {
+            return Mode.CLOSED;
+        }
+        return Mode.OPENED;
+    }
+
+    private enum Mode {
+        OPENED, CLOSED
+    }
+
+    private float getXDelta() {
+        if(getMode() == Mode.CLOSED) {
+            return 200;
+        }
+        return 0;
+    }
+
+    private float getRotationYFinal() {
+        if(getMode() == Mode.CLOSED) {
+            return -15;
+        }
+        return 0;
     }
 }

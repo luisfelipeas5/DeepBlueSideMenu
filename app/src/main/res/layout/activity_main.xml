@@ -6,7 +6,7 @@
         android:id="@+id/deep_blue_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="br.com.top10.deepbluesidemenu.MainActivity">
+        tools:context="br.com.top10.deepbluesidemenu.ui.MainActivity">
 
         <include android:id="@+id/include_layout_menu"
             layout="@layout/layout_menu"/>
