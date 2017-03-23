@@ -24,6 +24,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {

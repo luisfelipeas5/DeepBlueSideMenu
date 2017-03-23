@@ -3,7 +3,6 @@ package br.com.top10.deepbluesidemenu;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
@@ -11,8 +10,9 @@ import android.view.animation.Transformation;
 import android.widget.RelativeLayout;
 
 public class DeepBlueLayout extends RelativeLayout {
-    private static final int MENU_INDEX = 0;
-    private static final int CONTENT_INDEX = 1;
+    private static final int INDEX_MENU = 0;
+    private static final int INDEX_CONTENT = 1;
+    private static final int ROTATION_ANGLE_OPEN = -45;
 
     public DeepBlueLayout(Context context) {
         super(context);
@@ -39,22 +39,22 @@ public class DeepBlueLayout extends RelativeLayout {
             return;
         }
 
-        View menuView = getChildAt(MENU_INDEX);
+        View menuView = getChildAt(INDEX_MENU);
         menuView.layout(0, 0, menuView.getMeasuredWidth() - l, b - t);
 
-        View contentView = getChildAt(CONTENT_INDEX);
+        View contentView = getChildAt(INDEX_CONTENT);
         contentView.layout(0, 0, r - l, b - t);
     }
 
     public void switchMode() {
-        View contentView = getChildAt(CONTENT_INDEX);
+        View contentView = getChildAt(INDEX_CONTENT);
         AnimationSet contentAnimation = getContentAnimation();
         contentView.startAnimation(contentAnimation);
     }
 
     private AnimationSet getContentAnimation() {
         Animation rotationAnimation = new Animation() {
-            View contentView = getChildAt(CONTENT_INDEX);
+            View contentView = getChildAt(INDEX_CONTENT);
             float rotationYInitial = contentView.getRotationY();
             float rotationYFinal = getRotationYFinal();
 
@@ -68,7 +68,7 @@ public class DeepBlueLayout extends RelativeLayout {
         rotationAnimation.setDuration(500);
 
         Animation translateAnimation = new Animation() {
-            View contentView = getChildAt(CONTENT_INDEX);
+            View contentView = getChildAt(INDEX_CONTENT);
             float xInitial = contentView.getX();
             float xFinal = getXDelta();
 
@@ -90,7 +90,7 @@ public class DeepBlueLayout extends RelativeLayout {
     }
 
     public Mode getMode() {
-        View contentView = getChildAt(CONTENT_INDEX);
+        View contentView = getChildAt(INDEX_CONTENT);
         float contentViewRotationY = contentView.getRotationY();
         if(contentViewRotationY == 0) {
             return Mode.CLOSED;
@@ -104,14 +104,23 @@ public class DeepBlueLayout extends RelativeLayout {
 
     private float getXDelta() {
         if(getMode() == Mode.CLOSED) {
-            return 200;
+            View contentView = getChildAt(INDEX_CONTENT);
+
+            int xFactor = contentView.getWidth();
+            double cos = Math.cos(Math.toRadians(ROTATION_ANGLE_OPEN));
+            double contentNewWidth = Math.abs(xFactor * cos);
+
+            View menuView = getChildAt(INDEX_MENU);
+            int menuWidth = menuView.getMeasuredWidth();
+
+            return (float) (menuWidth - Math.abs(contentNewWidth - contentView.getWidth()));
         }
         return 0;
     }
 
     private float getRotationYFinal() {
         if(getMode() == Mode.CLOSED) {
-            return -15;
+            return ROTATION_ANGLE_OPEN;
         }
         return 0;
     }
