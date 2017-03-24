@@ -12,7 +12,7 @@ import android.widget.RelativeLayout;
 public class DeepBlueLayout extends RelativeLayout {
     private static final int INDEX_MENU = 0;
     private static final int INDEX_CONTENT = 1;
-    private static final int ROTATION_ANGLE_OPEN = -45;
+    private static final int ROTATION_ANGLE_OPEN = -15;
 
     public DeepBlueLayout(Context context) {
         super(context);
@@ -70,7 +70,7 @@ public class DeepBlueLayout extends RelativeLayout {
         Animation translateAnimation = new Animation() {
             View contentView = getChildAt(INDEX_CONTENT);
             float xInitial = contentView.getX();
-            float xFinal = getXDelta();
+            float xFinal = getXFinal();
 
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
@@ -102,18 +102,21 @@ public class DeepBlueLayout extends RelativeLayout {
         OPENED, CLOSED
     }
 
-    private float getXDelta() {
+    private float getXFinal() {
         if(getMode() == Mode.CLOSED) {
             View contentView = getChildAt(INDEX_CONTENT);
 
-            int xFactor = contentView.getWidth();
+            double x = contentView.getMeasuredWidth()/2;
             double cos = Math.cos(Math.toRadians(ROTATION_ANGLE_OPEN));
-            double contentNewWidth = Math.abs(xFactor * cos);
+            double xNew = Math.abs(x * cos);
 
             View menuView = getChildAt(INDEX_MENU);
             int menuWidth = menuView.getMeasuredWidth();
 
-            return (float) (menuWidth - Math.abs(contentNewWidth - contentView.getWidth()));
+            double xDelta =  Math.abs(x - xNew);
+            double menuWidthOvercast = Math.abs(Math.ceil(menuWidth - xDelta));
+
+            return (float) menuWidthOvercast;
         }
         return 0;
     }
